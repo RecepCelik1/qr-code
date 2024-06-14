@@ -1,21 +1,19 @@
 "use client"
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { setFormData } from '../redux/formSlice';
 
-
-
 const App = () => {
-  const [userData, setUserData] = useState(null);
   const [selectedOption, setSelectedOption] = useState('option1');
   
   const [WebsiteURL, setWebsiteURL] = useState('');
   const [PhoneNumber, setPhoneNumber] = useState('');
-  const [SMS, setSMS] = useState('');
   const [Text, setText] = useState('');
 
   const [mail , setMail] = useState('')
-    
+  const [isTextReachesLimit, setIsTextReachesLimit] = useState(false);
+
+
   const dispatch = useDispatch()
 
   const handleOptionChange = (e) => {
@@ -24,33 +22,35 @@ const App = () => {
 
   const handleWebSiteUrlSubmit = (e) => {
     e.preventDefault();
-    const newData = { data: WebsiteURL, mail, field : "website" };
-    setUserData(newData); 
+    const newData = { data: `${WebsiteURL}`, mail, field : "website" }; 
     dispatch(setFormData(newData)); 
   };
   
   const handlePhoneNumberSubmit = (e) => {
     e.preventDefault();
-    const newData = { data: PhoneNumber, mail, field : "phoneNumber" };
-    setUserData(newData); 
+    const newData = { data: `tel:${PhoneNumber}`, mail, field : "phoneNumber" }; 
     dispatch(setFormData(newData)); 
   };
   
   const handleSMSSubmit = (e) => {
     e.preventDefault();
-    const newData = { data: { PhoneNumber, SMS }, mail, field : "sms" };
-    setUserData(newData); 
-    dispatch(setFormData(newData)); 
+    const newData = { data: `sms:${PhoneNumber}?body=${encodeURIComponent(Text)}`, mail, field : "sms" }; 
+    dispatch(setFormData(newData));
   };
   
   const handlePlainTextSubmit = (e) => {
     e.preventDefault();
-    const newData = { data: Text, mail, field : "plainText" };
-    setUserData(newData); 
+    const newData = { data: `${Text}`, mail, field : "plainText" }; 
     dispatch(setFormData(newData)); 
   };
   
-
+  useEffect(() => {
+    if (Text.length > 160) {
+      setIsTextReachesLimit(true);
+    } else {
+      setIsTextReachesLimit(false);
+    }
+  }, [Text]);
 
   return (
     <div className="flex justify-center items-center w-full">
@@ -174,8 +174,8 @@ const App = () => {
                     type="text"
                     placeholder="Enter message to send"
                     className="border border-gray-300 p-2 mb-2 w-full"
-                    value={SMS}
-                    onChange={(e) => setSMS(e.target.value)}
+                    value={Text}
+                    onChange={(e) => setText(e.target.value)}
                     />
                     <p className='w-full flex justify-center'>160 characters maximum</p>
                 </label>
@@ -201,14 +201,16 @@ const App = () => {
 
             </div>
           )}
-
+          {isTextReachesLimit && (
+          <div className='w-full flex justify-center items-center text-red-500 text-xs'>Maximum character limit exceeded !!</div>
+          )}
           <label>
             <h2 className='font-bold text-xl'>Email code to</h2>
             <input
                 type='email'
                 placeholder='Email address'
                 className="border border-gray-300 p-2 mb-2 w-full"
-                
+                required
                 onChange={(e) => setMail(e.target.value)}
                 value={mail}
             />
@@ -216,7 +218,8 @@ const App = () => {
 
           <button
             type="submit"
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            className={`${isTextReachesLimit ? `bg-sky-300` : `bg-sky-600 hover:bg-blue-700`} text-white font-bold py-2 px-4 rounded`}
+            disabled={isTextReachesLimit}
           >
             Submit
           </button>
