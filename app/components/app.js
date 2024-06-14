@@ -34,7 +34,7 @@ const App = () => {
   
   const handleSMSSubmit = (e) => {
     e.preventDefault();
-    const newData = { data: `sms:${PhoneNumber}?body=${encodeURIComponent(Text)}`, mail, field : "sms" }; 
+    const newData = { data: `smsto:${PhoneNumber}:${Text}`, mail, field : "sms" }; 
     dispatch(setFormData(newData));
   };
   
